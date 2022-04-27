@@ -30,11 +30,11 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////////
 // CLASS DEFINITIONS
 ///////////////////////////////////////////////////////////////////////////////
-class Solver1D{
+class Solver{
   public:
-  int K;
-  int nx;
+  int nx, ny, nz;
   int nvar;
+  int K;
   int SolverType;
   int EquationType;
   int LimiterType;
@@ -43,10 +43,18 @@ class Solver1D{
   int FRtype;
   int nResidual=6;
   char LimiterName[256];
-  Mesh1D mesh;
-  EulerState1D Euler1D;
   FRelement1D FR;
   double wavespeed=20.0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CLASS DEFINITIONS
+///////////////////////////////////////////////////////////////////////////////
+class Solver1D: public Solver{
+  public:
+  Mesh1D mesh;
+  EulerState1D Euler1D;
   double*  dt;
   double*** dUdt;
   double** phi;
@@ -262,24 +270,10 @@ class Solver1D{
 ///////////////////////////////////////////////////////////////////////////////
 // CLASS DEFINITIONS
 ///////////////////////////////////////////////////////////////////////////////
-class Solver2D{
+class Solver2D: public Solver{
   public:
-  int K;
-  int nx;
-  int ny;
-  int nvar;
-  int SolverType;
-  int EquationType;
-  int LimiterType;
-  int BCtype;
-  int Ktype;
-  int FRtype;
-  int nResidual=6;
-  char LimiterName[256];
   Mesh2D mesh;
   EulerState2D Euler2D;
-  FRelement1D FR;
-  double wavespeed=20.0;
   double**  dt;
   double**** dUdt;
   double*** phi;
@@ -556,25 +550,10 @@ class Solver2D{
 ///////////////////////////////////////////////////////////////////////////////
 // CLASS DEFINITIONS
 ///////////////////////////////////////////////////////////////////////////////
-class Solver3D{
+class Solver3D: public Solver{
   public:
-  int K;
-  int nx;
-  int ny;
-  int nz;
-  int nvar;
-  int SolverType;
-  int EquationType;
-  int LimiterType;
-  int BCtype;
-  int Ktype;
-  int FRtype;
-  int nResidual=6;
-  char LimiterName[256];
   Mesh3D mesh;
   EulerState3D Euler3D;
-  FRelement1D FR;
-  double wavespeed=20.0;
   double***  dt;
   double***** dUdt;
   double**** phi;

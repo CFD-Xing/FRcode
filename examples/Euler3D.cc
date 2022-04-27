@@ -8,33 +8,103 @@ using namespace std;
 #include "../src/FlowSolver/FlowSolver.h"
 typedef std::chrono::high_resolution_clock Clock;
 
-int main(void){
+int main(int argc, char * argv[]){
 
   auto start_time = Clock::now();
-  // Case definition
-  int EquationType=2; // 1 - Linear wave, 2 - Euler
-  int option=1; // 1 - Case 1, 2 - Case 2 
+  int EquationType=2, MeshType=1, option=-1, SolverType=-1, nStage=-1, LimiterType=-1, K=4, Ktype=1, FRtype=1;
+  int nx=-1, ny=-1, nz=-1;
+  double CFL=-1;
+  int i=1;
+  while (i<argc){
+    if (strcmp(argv[i], "-Case")==0){
+      i++;
+      option = atoi(argv[i]);
+      if (option!=1 && option!=2){
+        cout << "Error! Unknown Case, 1 - Smooth case, 2 - Non-smooth case" << endl;
+        return 1;
+      }
+    }else if (strcmp(argv[i], "-SolverType")==0){
+      i++;
+      SolverType = atoi(argv[i]);
+      if (SolverType!=1 && SolverType!=2){
+        cout << "Error! Unknown SolverType, 1 - FVM, 2 - FR" << endl;
+        return 1;
+      }
+    }else if (strcmp(argv[i], "-LimiterType")==0){
+      i++;
+      LimiterType = atoi(argv[i]);
+      if (LimiterType!=0 && LimiterType!=1 && LimiterType!=2 && LimiterType!=3){
+        cout << "Error! Unknown LimiterType, 0 - Zero, 1 - Unlimited, 2 - Barth-Jespersen, 3 - Venkatakrishnan" << endl;
+        return 1;
+      }
+    }else if (strcmp(argv[i], "-nStage")==0){
+      i++;
+      nStage = atoi(argv[i]);
+      if (nStage<=0 || nStage>6){
+        cout << "Error! nStage, 0 - 6" << endl;
+        return 1;
+      }
+    }else if (strcmp(argv[i], "-CFL")==0){
+      i++;
+      CFL = atof(argv[i]);
+      if (CFL<=0.0){
+        cout << "Error! CFL must be larger than 0" << endl;
+        return 1;
+      }
+    }else if (strcmp(argv[i], "-nx")==0){
+      i++;
+      nx = atoi(argv[i]);
+      if (nx<=0){
+        cout << "Error! nx must be larger than 0" << endl;
+        return 1;
+      }
+    }else if (strcmp(argv[i], "-ny")==0){
+      i++;
+      ny = atoi(argv[i]);
+      if (ny<=0){
+        cout << "Error! ny must be larger than 0" << endl;
+        return 1;
+      }
+    }else if (strcmp(argv[i], "-nz")==0){
+      i++;
+      nz = atoi(argv[i]);
+      if (nz<=0){
+        cout << "Error! nz must be larger than 0" << endl;
+        return 1;
+      }
+    }else{
+      cout << "Error! Unknow parameter " << argv[i] << endl;
+      return 1;
+    }
+    i++;
+  }
 
-  // Solver 
-  int SolverType=2; // 1 - FVM, 2 - FR
-
-  // Time stepping
-  int nStage=4;
-  double CFL=0.10;
-
-  // Mesh
-  int MeshType=1; // 1 - Uniform
-  int nx=32;
-  int ny=32;
-  int nz=32;
-
-  // FVM
-  int LimiterType=3; // 0 - Zero, 1 - Unlimieted, 2 - Barth-Jespersen, 3 - Venkatakrishnan
-
-  // Flux Reconstruction
-  int K=4;
-  int Ktype=1;
-  int FRtype=1;
+  // Check argument
+  if(option==-1){
+    cout << "Error! Case not specified, 1 - Smooth case, 2 - Non-smooth case" << endl;
+    return 1;
+  }else if (SolverType==-1){
+    cout << "Error! SolverType not specified, 1 - FVM, 2 - FR" << endl;
+    return 1;
+  }else if (SolverType==1 && LimiterType==-1){
+    cout << "Error! LimiterType not specified, 0 - Zero, 1 - Unlimited, 2 - Barth-Jespersen, 3 - Venkatakrishnan" << endl;
+    return 1;
+  }else if (nStage==-1){
+    cout << "Error! nStage not specified, 0 - 6" << endl;
+    return 1;
+  }else if (CFL==-1){
+    cout << "Error! CFL not specified" << endl;
+    return 1;
+  }else if (nx==-1){
+    cout << "Error! nx not specified" << endl;
+    return 1;
+  }else if (ny==-1){
+    cout << "Error! ny not specified" << endl;
+    return 1;
+  }else if (nz==-1){
+    cout << "Error! nz not specified" << endl;
+    return 1;
+  }
 
   // Other
   double t=0.0, tfinal, dt;

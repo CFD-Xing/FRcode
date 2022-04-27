@@ -55,13 +55,13 @@ void Solver2D::EulerInitialCondition(const int& option, double& t){
       rhol = 1*1.225; ul = 0.0; vl = 0.0; pl = 1*101325.0;
       rhor = 4*1.225; ur = 0.0; vr = 0.0; pr = 4*101325.0;
       xm = 5.0; ym = 5.0; t = 0.007;
-      BCtype = 3;
+      BCtype = 3; // No BCs
       break;
     case 2: // Oblique shock
       rhol = 1.225; ul = 700.0*cos(M_PI/18.0); vl = -700.0*sin(M_PI/18.0); pl = 101325.0;
       rhor = 1.225; ur = 700.0*cos(M_PI/18.0); vr = -700.0*sin(M_PI/18.0); pr = 101325.0;
       xm = 2.0; ym = 2.0; t = 0.050;
-      BCtype = 4;
+      BCtype = 4; // Wedge
       break;
     default:
       throw invalid_argument("Unknown initial condition"); 

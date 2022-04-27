@@ -52,7 +52,7 @@ void Solver1D::EulerInitialCondition(const int& option, double& t){
   // INITIAL CONDITION
   // ----------------------
   // Set initial condition
-  BCtype = 3;
+  BCtype = 3; // No BCs
   if (option<=8){
     switch (option){
     case 1:

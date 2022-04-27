@@ -263,6 +263,12 @@ void EulerState3D::RoeSolver(const double* Wl, const double* Wr, double* Fupw){
   double rhol, ul, vl, wl, pl, Hl, cl;
   double rhor, ur, vr, wr, pr, Hr, cr;
   double rhoa, ua, va, wa, pa, Ha, ca;
+  double* Fl = new double[5];
+  double* Fr = new double[5];
+  double* Rc = new double[5];
+  double* Lp = new double[5];
+  double* alpha = new double[5];
+  double* Lambda = new double[5];
 
 
   // 1D ROE RIEMANN SOLVER
@@ -303,6 +309,14 @@ void EulerState3D::RoeSolver(const double* Wl, const double* Wr, double* Fupw){
       Fupw[i] -= 0.5*(fabs(Lambda[j])*alpha[j])*Rc[i];
     }
   }
+  
+  // Free memory
+  delete[] Fl; Fl=NULL;
+  delete[] Fr; Fr=NULL;
+  delete[] Rc; Rc=NULL;
+  delete[] Lp; Lp=NULL;
+  delete[] alpha; alpha=NULL;
+  delete[] Lambda; Lambda=NULL;
 }
 
 
@@ -333,6 +347,10 @@ void EulerState3D::HLLESolver(const double* Wl, const double* Wr, double* Fupw){
   double rhor, ur, vr, wr, pr, Hr, cr;
   double rhoa, ua, va, wa, pa, Ha, ca;
   double Lambda_m, Lambda_p;
+  double* Fl = new double[5];
+  double* Fr = new double[5];
+  double* Ul = new double[5];
+  double* Ur = new double[5];
 
 
   // 1D HLLE RIEMANN SOLVER
@@ -365,6 +383,12 @@ void EulerState3D::HLLESolver(const double* Wl, const double* Wr, double* Fupw){
     Fupw[i] = (Lambda_p*Fl[i]-Lambda_m*Fr[i] + 
                 Lambda_m*Lambda_p*(Ur[i]-Ul[i])) / (Lambda_p-Lambda_m);
   }
+
+  // Free memory
+  delete[] Fl; Fl=NULL;
+  delete[] Fr; Fr=NULL;
+  delete[] Ul; Ul=NULL;
+  delete[] Ur; Ur=NULL;
 }
 
 

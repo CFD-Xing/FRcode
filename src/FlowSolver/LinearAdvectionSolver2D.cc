@@ -43,7 +43,7 @@ void Solver2D::LinearAdvectionInitialCondition(const int& option, const double& 
 
   // VARIABLE DECLARATION
   // ----------------------
-  static double L = 10.0;
+  double L = 10.0;
 
 
   // INITIAL CONDITION
@@ -51,7 +51,7 @@ void Solver2D::LinearAdvectionInitialCondition(const int& option, const double& 
   // Set initial condition
   wavespeed = 10.0;
   t = ncycle*L/fabs(wavespeed);
-  BCtype = 2;
+  BCtype = 2; // Periodic BCs
   switch (option){
     case 1: // Smooth case
       for (int i=0; i<mesh.nx+2*mesh.ng; i++){
@@ -114,7 +114,7 @@ void Solver2D::LinearAdvectionExactSolution(const int& option, const double& t){
 
   // VARIABLE DECLARATION
   // ----------------------
-  static double L = 10.0;
+  double L = 10.0;
 
 
   // EXACT SOLUTION
