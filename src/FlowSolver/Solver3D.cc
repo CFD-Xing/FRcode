@@ -5,14 +5,14 @@
 #include <fstream>
 #include <cstring>
 using namespace std;
-#include "../src/FlowSolver/FlowSolver.h"
+#include "FlowSolver.h"
 typedef std::chrono::high_resolution_clock Clock;
 
 int main(int argc, char * argv[]){
 
   auto start_time = Clock::now();
   int MeshType=1, option=-1, EquationType=-1, SolverType=-1, nStage=-1, LimiterType=-1, K=4, Ktype=1, FRtype=1;
-  int nx=-1, ny=-1;
+  int nx=-1, ny=-1, nz=-1;
   double CFL=-1;
   int i=1;
   while (i<argc){
@@ -72,6 +72,13 @@ int main(int argc, char * argv[]){
         cout << "Error! ny must be larger than 0" << endl;
         return 1;
       }
+    }else if (strcmp(argv[i], "-nz")==0){
+      i++;
+      nz = atoi(argv[i]);
+      if (nz<=0){
+        cout << "Error! nz must be larger than 0" << endl;
+        return 1;
+      }
     }else{
       cout << "Error! Unknow parameter " << argv[i] << endl;
       return 1;
@@ -104,37 +111,40 @@ int main(int argc, char * argv[]){
   }else if (ny==-1){
     cout << "Error! ny not specified" << endl;
     return 1;
+  }else if (nz==-1){
+    cout << "Error! nz not specified" << endl;
+    return 1;
   }
 
   // Other
   double t=0.0, tfinal, dt;
 
-  // Declare 2D solver
-  Solver2D solver2D(K, nx, ny, SolverType, EquationType, LimiterType, Ktype, FRtype);
+  // Declare 3D solver
+  Solver3D solver3D(K, nx, ny, nz, SolverType, EquationType, LimiterType, Ktype, FRtype);
 
   // Set mesh
-  solver2D.setMesh(MeshType, 0.0, 10.0, 0.0, 10.0);
+  solver3D.setMesh(MeshType, 0.0, 10.0, 0.0, 10.0, 0.0, 10.0);
 
   // Set initial condition
   if (EquationType==1){
-    solver2D.LinearAdvectionInitialCondition(option, 10.0, tfinal);
+    solver3D.LinearAdvectionInitialCondition(option, 10.0, tfinal);
   }else if (EquationType==2){
-    solver2D.EulerInitialCondition(option, tfinal);
+    solver3D.EulerInitialCondition(option, tfinal);
   }
 
   // Loop over time
   while(t<tfinal){
     cout << "Time = " << t << endl;
-    dt = solver2D.TimeStep(CFL);
-    solver2D.RungeKutta(nStage);
+    dt = solver3D.TimeStep(CFL);
+    solver3D.RungeKutta(nStage);
     t+=dt;
   }
 
   // Output solution
   if (EquationType==1){
-    solver2D.LinearAdvectionOutput(option, CFL, nStage, t);
+    solver3D.LinearAdvectionOutput(option, CFL, nStage, t);
   }else if (EquationType==2){
-    solver2D.EulerOutput(option, CFL, nStage);
+    solver3D.EulerOutput(option, CFL, nStage);
   }
   
   auto end_time = Clock::now();
