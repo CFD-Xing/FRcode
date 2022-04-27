@@ -11,12 +11,19 @@ typedef std::chrono::high_resolution_clock Clock;
 int main(int argc, char * argv[]){
 
   auto start_time = Clock::now();
-  int EquationType=1, MeshType=1, option=-1, SolverType=-1, nStage=-1, LimiterType=-1, K=4, Ktype=1, FRtype=1;
-  int nx=-1, ny=-1;
+  int MeshType=1, option=-1, EquationType=-1, SolverType=-1, nStage=-1, LimiterType=-1, K=4, Ktype=1, FRtype=1;
+  int nx=-1, ny=-1, nz=-1;
   double CFL=-1;
   int i=1;
   while (i<argc){
-    if (strcmp(argv[i], "-Case")==0){
+    if (strcmp(argv[i], "-EquationType")==0){
+      i++;
+      EquationType = atoi(argv[i]);
+      if (EquationType!=1 && EquationType!=2){
+        cout << "Error! Unknown EquationType, 1 - Linear advection, 2 - Euler" << endl;
+        return 1;
+      }
+    }else if (strcmp(argv[i], "-Case")==0){
       i++;
       option = atoi(argv[i]);
       if (option!=1 && option!=2){
@@ -65,6 +72,13 @@ int main(int argc, char * argv[]){
         cout << "Error! ny must be larger than 0" << endl;
         return 1;
       }
+    }else if (strcmp(argv[i], "-nz")==0){
+      i++;
+      nz = atoi(argv[i]);
+      if (nz<=0){
+        cout << "Error! nz must be larger than 0" << endl;
+        return 1;
+      }
     }else{
       cout << "Error! Unknow parameter " << argv[i] << endl;
       return 1;
@@ -73,7 +87,10 @@ int main(int argc, char * argv[]){
   }
 
   // Check argument
-  if(option==-1){
+  if(EquationType==-1){
+    cout << "Error! EquationType not specified, 1 - Linear advection, 2 - Euler" << endl;
+    return 1;
+  }else if(option==-1){
     cout << "Error! Case not specified, 1 - Smooth case, 2 - Non-smooth case" << endl;
     return 1;
   }else if (SolverType==-1){
@@ -94,30 +111,41 @@ int main(int argc, char * argv[]){
   }else if (ny==-1){
     cout << "Error! ny not specified" << endl;
     return 1;
+  }else if (nz==-1){
+    cout << "Error! nz not specified" << endl;
+    return 1;
   }
 
   // Other
   double t=0.0, tfinal, dt;
 
-  // Declare 2D linear advection solver
-  Solver2D LinearAdvection2D(K, nx, ny, SolverType, EquationType, LimiterType, Ktype, FRtype);
+  // Declare 3D solver
+  Solver3D solver3D(K, nx, ny, nz, SolverType, EquationType, LimiterType, Ktype, FRtype);
 
   // Set mesh
-  LinearAdvection2D.setMesh(MeshType, 0.0, 10.0, 0.0, 10.0);
+  solver3D.setMesh(MeshType, 0.0, 10.0, 0.0, 10.0, 0.0, 10.0);
 
   // Set initial condition
-  LinearAdvection2D.LinearAdvectionInitialCondition(option, 10.0, tfinal);
+  if (EquationType==1){
+    solver3D.LinearAdvectionInitialCondition(option, 10.0, tfinal);
+  }else if (EquationType==2){
+    solver3D.EulerInitialCondition(option, tfinal);
+  }
 
   // Loop over time
   while(t<tfinal){
     cout << "Time = " << t << endl;
-    dt = LinearAdvection2D.TimeStep(CFL);
-    LinearAdvection2D.RungeKutta(nStage);
+    dt = solver3D.TimeStep(CFL);
+    solver3D.RungeKutta(nStage);
     t+=dt;
   }
 
   // Output solution
-  LinearAdvection2D.LinearAdvectionOutput(option, CFL, nStage, t);
+  if (EquationType==1){
+    solver3D.LinearAdvectionOutput(option, CFL, nStage, t);
+  }else if (EquationType==2){
+    solver3D.EulerOutput(option, CFL, nStage);
+  }
   
   auto end_time = Clock::now();
   cout << "Total time is: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count()*1e-9 << " sec" << std::endl;
