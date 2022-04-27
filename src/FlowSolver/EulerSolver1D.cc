@@ -320,21 +320,21 @@ void Solver1D::EulerExactSolution(const int& option){
         }
       }
       break;
-    case 6: t = 0.035;
+    case 6:
       rhol = 2.787; ul = 216.97; pl = 200000.0;
       rhor = 1.598; ur = 383.64; pr =  91880.0;
-      xm = 5.0;
-      for (int i=0; i<mesh.nx+2*mesh.ng; i++){
-        for (int ip=0; ip<K; ip++){
+      xm = 5.0; t = 0.035;
+      for (int i=mesh.nx+2*mesh.ng-1; i>=0; i--){
+        for (int ip=K-1; ip>=0; ip--){
           if (mesh.xc[i]+0.5*mesh.dx[i]*FR.eta[ip] >= 8.5){
             Wn[K*i+ip][0]=rhor; 
             Wn[K*i+ip][1]=ur; 
             Wn[K*i+ip][2]=pr;
             Euler1D.PrimtoCons(&Wn[K*i+ip][0], &Un[K*i+ip][0]);
           }else if (mesh.xc[i]+0.5*mesh.dx[i]*FR.eta[ip] <= 1.5){
-            Wn[K*i+ip][0]=Wn[K*i+ip-1][0]; 
-            Wn[K*i+ip][1]=Wn[K*i+ip-1][1];
-            Wn[K*i+ip][2]=Wn[K*i+ip-1][2];
+            Wn[K*i+ip][0]=Wn[K*i+ip+1][0]; 
+            Wn[K*i+ip][1]=Wn[K*i+ip+1][1];
+            Wn[K*i+ip][2]=Wn[K*i+ip+1][2];
             Euler1D.PrimtoCons(&Wn[K*i+ip][0], &Un[K*i+ip][0]);
           }else{
             c_neg = (mesh.xc[i]+0.5*mesh.dx[i]*FR.eta[ip]-xm)/0.035;
