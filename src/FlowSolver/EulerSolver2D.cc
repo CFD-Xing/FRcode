@@ -184,7 +184,7 @@ void Solver2D::EulerOutput(const int& option, const double& CFL, const int& nSta
     }
     outfile << endl;
   }
-  outfile << "VARIABLES = \"x\"\n";
+  /*outfile << "VARIABLES = \"x\"\n";
   outfile << "\"y\"\n";
   outfile << "\"rho\"\n";
   outfile << "\"u\"\n";
@@ -211,6 +211,6 @@ void Solver2D::EulerOutput(const int& option, const double& CFL, const int& nSta
       }
     }
     outfile << endl;
-  }
+  }*/
   outfile.close();
 }

@@ -204,7 +204,7 @@ void Solver3D::EulerOutput(const int& option, const double& CFL, const int& nSta
     }
     outfile << endl;
   }
-  outfile << "VARIABLES = \"x\"\n";
+  /*outfile << "VARIABLES = \"x\"\n";
   outfile << "\"y\"\n";
   outfile << "\"z\"\n";
   outfile << "\"rho\"\n";
@@ -240,6 +240,6 @@ void Solver3D::EulerOutput(const int& option, const double& CFL, const int& nSta
       outfile << endl;
     }
     outfile << endl;
-  }
+  }*/
   outfile.close();
 }
