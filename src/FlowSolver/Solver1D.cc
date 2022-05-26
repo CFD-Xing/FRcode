@@ -10,11 +10,14 @@ typedef std::chrono::high_resolution_clock Clock;
 
 int main(int argc, char * argv[]){
 
+  // Declares
   auto start_time = Clock::now();
   int MeshType=1, option=-1, EquationType=-1, SolverType=-1, nStage=-1, LimiterType=-1, K=4, Ktype=1, FRtype=1;
   int nx=-1;
   double CFL=-1;
   int i=1;
+
+  // Arguments
   while (i<argc){
     if (strcmp(argv[i], "-EquationType")==0){
       i++;
