@@ -1,5 +1,5 @@
 *.dat
 *.nfs*
-examples/solver1d
-examples/solver2d
-examples/solver3d
+src/solver1d
+src/solver2d
+src/solver3d
