@@ -44,25 +44,34 @@ void Solver2D::EulerInitialCondition(const int& option, double& t){
   // ----------------------
   double rhol, ul, vl, pl;
   double rhor, ur, vr, pr;
+  double rho, u, v, p, s, T;
   double xm, ym;
+  double g=Euler2D.getHeatRatio();
 
 
   // INITIAL CONDITION
   // ----------------------
   // Set initial condition
   switch (option){
-    case 1: // Shockbox
+    case 1: // Vortex
+      rho = 1.0; u = 1.0; v = 1.0; p = 1.0;
+      s = p/pow(rho,g);
+      T = p/rho;
+      t = 2.0;
+      BCtype = 3; // No BCs
+      break;
+    case 2: // Shockbox
       rhol = 1*1.225; ul = 0.0; vl = 0.0; pl = 1*101325.0;
       rhor = 4*1.225; ur = 0.0; vr = 0.0; pr = 4*101325.0;
       xm = 5.0; ym = 5.0; t = 0.007;
       BCtype = 3; // No BCs
       break;
-    case 2: // Oblique shock
-      rhol = 1.225; ul = 700.0*cos(M_PI/18.0); vl = -700.0*sin(M_PI/18.0); pl = 101325.0;
-      rhor = 1.225; ur = 700.0*cos(M_PI/18.0); vr = -700.0*sin(M_PI/18.0); pr = 101325.0;
-      xm = 2.0; ym = 2.0; t = 0.050;
-      BCtype = 4; // Wedge
-      break;
+   // case 2: // Oblique shock
+   //   rhol = 1.225; ul = 700.0*cos(M_PI/18.0); vl = -700.0*sin(M_PI/18.0); pl = 101325.0;
+   //   rhor = 1.225; ur = 700.0*cos(M_PI/18.0); vr = -700.0*sin(M_PI/18.0); pr = 101325.0;
+   //   xm = 2.0; ym = 2.0; t = 0.050;
+   //   BCtype = 4; // Wedge
+   //   break;
     default:
       throw invalid_argument("Unknown initial condition"); 
   }
@@ -70,19 +79,34 @@ void Solver2D::EulerInitialCondition(const int& option, double& t){
     for (int j=0; j<mesh.ny+2*mesh.ng; j++){
       for (int ip=0; ip<K; ip++){
         for (int jp=0; jp<K; jp++){
-          if (mesh.xc[i][j]+0.5*mesh.dx[i][j]*FR.eta[ip] < xm && 
-              mesh.yc[i][j]+0.5*mesh.dy[i][j]*FR.eta[jp] < ym){
-            W[K*i+ip][K*j+jp][0]=rhol; 
-            W[K*i+ip][K*j+jp][1]=ul; 
-            W[K*i+ip][K*j+jp][2]=vl; 
-            W[K*i+ip][K*j+jp][3]=pl;
+          if (option==1){
+            double x = mesh.xc[i][j]+0.5*mesh.dx[i][j]*FR.eta[ip] - 5.0;
+            double y = mesh.yc[i][j]+0.5*mesh.dy[i][j]*FR.eta[jp] - 5.0;
+            double r = sqrt(x*x + y*y);
+            double epsilon = 5.0;
+            double du = -epsilon/2.0/M_PI * exp(0.5*(1.0-r*r)) * y;
+            double dv =  epsilon/2.0/M_PI * exp(0.5*(1.0-r*r)) * x;
+            double dT = -(g-1.0) * epsilon * epsilon / (8.0*g*M_PI*M_PI) * exp(1.0-r*r);
+            W[K*i+ip][K*j+jp][0]=pow((T+dT)/s, 1.0/(g-1.0)); 
+            W[K*i+ip][K*j+jp][1]=u+du; 
+            W[K*i+ip][K*j+jp][2]=v+dv; 
+            W[K*i+ip][K*j+jp][3]=pow(pow(T+dT,g)/s,1.0/(g-1.0));
             Euler2D.PrimtoCons(&W[K*i+ip][K*j+jp][0], &U[K*i+ip][K*j+jp][0]);
-          }else{
-            W[K*i+ip][K*j+jp][0]=rhor; 
-            W[K*i+ip][K*j+jp][1]=ur; 
-            W[K*i+ip][K*j+jp][2]=vr; 
-            W[K*i+ip][K*j+jp][3]=pr;
-            Euler2D.PrimtoCons(&W[K*i+ip][K*j+jp][0], &U[K*i+ip][K*j+jp][0]);
+          }else if (option==2){
+            if (mesh.xc[i][j]+0.5*mesh.dx[i][j]*FR.eta[ip] < xm && 
+                mesh.yc[i][j]+0.5*mesh.dy[i][j]*FR.eta[jp] < ym){
+              W[K*i+ip][K*j+jp][0]=rhol; 
+              W[K*i+ip][K*j+jp][1]=ul; 
+              W[K*i+ip][K*j+jp][2]=vl; 
+              W[K*i+ip][K*j+jp][3]=pl;
+              Euler2D.PrimtoCons(&W[K*i+ip][K*j+jp][0], &U[K*i+ip][K*j+jp][0]);
+            }else{
+              W[K*i+ip][K*j+jp][0]=rhor; 
+              W[K*i+ip][K*j+jp][1]=ur; 
+              W[K*i+ip][K*j+jp][2]=vr; 
+              W[K*i+ip][K*j+jp][3]=pr;
+              Euler2D.PrimtoCons(&W[K*i+ip][K*j+jp][0], &U[K*i+ip][K*j+jp][0]);
+            }
           }
         }
       }
@@ -118,11 +142,54 @@ void Solver2D::EulerExactSolution(const int& option){
   // ----------------------
   double rhol, ul, vl, pl;
   double rhor, ur, vr, pr;
+  double rho, u, v, p, s, T;
   double xm, ym;
+  double g=Euler2D.getHeatRatio();
 
 
   // EXACT SOLUTION
   // ----------------------
+  switch (option){
+    case 1: // Vortex
+      rho = 1.0; u = 1.0; v = 1.0; p = 1.0;
+      s = p/pow(rho,g);
+      T = p/rho;
+      break;
+    case 2: // Shockbox
+      rhol = 1*1.225; ul = 0.0; vl = 0.0; pl = 1*101325.0;
+      rhor = 4*1.225; ur = 0.0; vr = 0.0; pr = 4*101325.0;
+      xm = 5.0; ym = 5.0;
+      break;
+   // case 2: // Oblique shock
+   //   rhol = 1.225; ul = 700.0*cos(M_PI/18.0); vl = -700.0*sin(M_PI/18.0); pl = 101325.0;
+   //   rhor = 1.225; ur = 700.0*cos(M_PI/18.0); vr = -700.0*sin(M_PI/18.0); pr = 101325.0;
+   //   xm = 2.0; ym = 2.0;
+   //   break;
+    default:
+      throw invalid_argument("Unknown initial condition"); 
+  }
+  for (int i=0; i<mesh.nx+2*mesh.ng; i++){
+    for (int j=0; j<mesh.ny+2*mesh.ng; j++){
+      for (int ip=0; ip<K; ip++){
+        for (int jp=0; jp<K; jp++){
+          if (option==1){
+            double x = mesh.xc[i][j]+0.5*mesh.dx[i][j]*FR.eta[ip] - 7.0;
+            double y = mesh.yc[i][j]+0.5*mesh.dy[i][j]*FR.eta[jp] - 7.0;
+            double r = sqrt(x*x + y*y);
+            double epsilon = 5.0;
+            double du = -epsilon/2.0/M_PI * exp(0.5*(1.0-r*r)) * y;
+            double dv =  epsilon/2.0/M_PI * exp(0.5*(1.0-r*r)) * x;
+            double dT = -(g-1.0) * epsilon * epsilon / (8.0*g*M_PI*M_PI) * exp(1.0-r*r);
+            Wn[K*i+ip][K*j+jp][0]=pow((T+dT)/s, 1.0/(g-1.0)); 
+            Wn[K*i+ip][K*j+jp][1]=u+du; 
+            Wn[K*i+ip][K*j+jp][2]=v+dv; 
+            Wn[K*i+ip][K*j+jp][3]=pow(pow(T+dT,g)/s,1.0/(g-1.0));
+            Euler2D.PrimtoCons(&Wn[K*i+ip][K*j+jp][0], &Un[K*i+ip][K*j+jp][0]);
+          }
+        }
+      }
+    }
+  }
 
 }
 
@@ -184,7 +251,7 @@ void Solver2D::EulerOutput(const int& option, const double& CFL, const int& nSta
     }
     outfile << endl;
   }
-  /*outfile << "VARIABLES = \"x\"\n";
+  outfile << "VARIABLES = \"x\"\n";
   outfile << "\"y\"\n";
   outfile << "\"rho\"\n";
   outfile << "\"u\"\n";
@@ -203,14 +270,14 @@ void Solver2D::EulerOutput(const int& option, const double& CFL, const int& nSta
           outfile << fixed;
           outfile << mesh.xc[i][j] + 0.5*mesh.dx[i][j]*FR.eta[ip] << " " 
                   << mesh.yc[i][j] + 0.5*mesh.dy[i][j]*FR.eta[jp] << " " 
-                  << W0[K*i+ip][K*j+jp][0] << " "
-                  << W0[K*i+ip][K*j+jp][1] << " "
-                  << W0[K*i+ip][K*j+jp][2] << " "
-                  << W0[K*i+ip][K*j+jp][3] << endl;
+                  << Wn[K*i+ip][K*j+jp][0] << " "
+                  << Wn[K*i+ip][K*j+jp][1] << " "
+                  << Wn[K*i+ip][K*j+jp][2] << " "
+                  << Wn[K*i+ip][K*j+jp][3] << endl;
         }
       }
     }
     outfile << endl;
-  }*/
+  }
   outfile.close();
 }

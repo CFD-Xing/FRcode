@@ -29,10 +29,10 @@ int main(int argc, char * argv[]){
     }else if (strcmp(argv[i], "-Case")==0){
       i++;
       option = atoi(argv[i]);
-      if (option!=1 && option!=2){
-        cout << "Error! Unknown Case, 1 - Smooth case, 2 - Non-smooth case" << endl;
-        return 1;
-      }
+      //if (option!=1 && option!=2){
+      //  cout << "Error! Unknown Case, 1 - Smooth case, 2 - Non-smooth case" << endl;
+      //  return 1;
+      //}
     }else if (strcmp(argv[i], "-SolverType")==0){
       i++;
       SolverType = atoi(argv[i]);
